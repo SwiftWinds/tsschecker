@@ -1,7 +1,7 @@
 # tsschecker  
 _tsschecker is a powerful tool to work with signing technology on iOS devices._
 
-Latest compiled version can be found [here](https://github.com/s0uthwest/tsschecker/releases). Linux version goes later. Windows version is supported, but I will not compile it.
+Latest compiled version can be found [here](https://github.com/s0uthwest/tsschecker/releases). Windows version is supported, but I will not compile it.
 
 ## Features  
 * Allows you to get lists of all devices and all iOS/OTA versions for a specific device.

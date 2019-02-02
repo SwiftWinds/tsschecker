@@ -4,13 +4,13 @@ Recommmended save blobs with this generators:
 0x4bb8834ba6444b50
 0x698337f5a79c3292
 0xedeeb72d7575e360
-0x0000000000000000
+0x1111111111111111
 
-Recovery collision APNonces (some A7 devices with iOS 9.1-10.2):
+Recovery collision ApNonces (some A7 devices with iOS 9.1-10.2):
 9e4c518009d00df190a450b3b47691768812360c
 9f4aeec726e7c682339ddb3c6c2dec52662dc517
 
-DFU collision APNonces:
+DFU collision ApNonces:
 1) for some A7 devices, some collisioned):
 6b83f831a6305ae90d57a78ba8eb9d81e7a9058f
 7d7bdc28e5eca36dc5bc20c791850f110dc28269

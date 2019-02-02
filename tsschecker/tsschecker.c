@@ -19,10 +19,12 @@
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
-#include "tsschecker.h"
-#include "download.h"
+
 #include <libfragmentzip/libfragmentzip.h>
 #include <libirecovery.h>
+
+#include "tsschecker.h"
+#include "download.h"
 #include "tss.h"
 
 #ifdef __APPLE__
@@ -107,7 +109,7 @@ int nocache = 0;
 int save_shshblobs = 0;
 const char *shshSavePath = "."DIRECTORY_DELIMITER_STR;
 
-// iPhone & iPod touch (1st generations) doesn't have signing technology.
+/* NOTE: iPhone & iPod touch (1st generations) doesn't have signing technology. */
 static struct bbdevice bbdevices[] = {
     // iPod touches
     {"iPod2,1", 0, 0}, // 2nd gen
@@ -155,18 +157,21 @@ static struct bbdevice bbdevices[] = {
     {"iPad2,2", 257, 12}, // iPad 2 GSM
     {"iPad2,3", 257, 12}, // iPad 2 CDMA
     {"iPad2,4", 0, 0}, // iPad 2 Wi-Fi (2012)
-    {"iPad2,5", 0, 0}, // iPad mini (1st gen, Wi-Fi)
-    {"iPad2,6", 3255536192, 4}, // iPad mini (1st gen, CDMA)
-    {"iPad2,7", 3255536192, 4}, // iPad mini (1st gen, GSM)
     {"iPad3,1", 0, 0}, // the new iPad (3rd gen, Wi-Fi)
     {"iPad3,2", 4, 4}, // the new iPad (3rd gen, CDMA)
     {"iPad3,3", 4, 4}, // the new iPad (3rd gen, GSM)
     {"iPad3,4", 0, 0}, // iPad with Retina Display (4th gen, Wi-Fi)
     {"iPad3,5", 3255536192, 4}, // iPad with Retina Display (4th gen, CDMA)
     {"iPad3,6", 3255536192, 4}, // iPad with Retina Display (4th gen, GSM)
-    {"iPad4,1", 0, 0}, // iPad Air (Wi-Fi)
-    {"iPad4,2", 3554301762, 4}, // iPad Air (Cellular)
-    {"iPad4,3", 3554301762, 4}, // iPad Air (Cellular, China)
+    {"iPad6,11", 0, 0}, // iPad (5th gen, 2017, Wi-Fi)
+    {"iPad6,12", 3840149528, 4}, // iPad (5th gen, 2017, Cellular)
+    {"iPad7,5", 0, 0}, // iPad (6th gen, 2018, Wi-Fi)
+    {"iPad7,6", 3840149528, 4}, // iPad (6th gen, 2018, Cellular)
+    
+    // iPad minis
+    {"iPad2,5", 0, 0}, // iPad mini (1st gen, Wi-Fi)
+    {"iPad2,6", 3255536192, 4}, // iPad mini (1st gen, CDMA)
+    {"iPad2,7", 3255536192, 4}, // iPad mini (1st gen, GSM)
     {"iPad4,4", 0, 0}, // iPad mini 2 (Wi-Fi)
     {"iPad4,5", 3554301762, 4}, // iPad mini 2 (Cellular)
     {"iPad4,6", 3554301762, 4}, // iPad mini 2 (Cellular, China)
@@ -175,20 +180,23 @@ static struct bbdevice bbdevices[] = {
     {"iPad4,9", 3554301762, 4}, // iPad mini 3 (Cellular, China)
     {"iPad5,1", 0, 0}, // iPad mini 4 (Wi-Fi)
     {"iPad5,2", 3840149528, 4}, // iPad mini 4 (Cellular)
+
+    // iPad Airs
+    {"iPad4,1", 0, 0}, // iPad Air (Wi-Fi)
+    {"iPad4,2", 3554301762, 4}, // iPad Air (Cellular)
+    {"iPad4,3", 3554301762, 4}, // iPad Air (Cellular, China)
     {"iPad5,3", 0, 0}, // iPad Air 2 (Wi-Fi)
     {"iPad5,4", 3840149528, 4}, // iPad Air 2 (Cellular)
+    
+    // iPad Pros
     {"iPad6,3", 0, 0}, // iPad Pro (9,7", Wi-Fi)
     {"iPad6,4", 3840149528, 4}, // iPad Pro (9,7", Cellular)
     {"iPad6,7", 0, 0}, // iPad Pro (12.9", 1st gen, Wi-Fi)
     {"iPad6,8", 3840149528, 4}, // iPad Pro (12.9", 1st gen, Cellular)
-    {"iPad6,11", 0, 0}, // iPad (5th gen, 2017, Wi-Fi)
-    {"iPad6,12", 3840149528, 4}, // iPad (5th gen, 2017, Cellular)
     {"iPad7,1", 0, 0}, // iPad Pro (12.9", 2nd gen, Wi-Fi)
     {"iPad7,2", 2315222105, 4}, // iPad Pro (12.9", 1st gen, Cellular)
     {"iPad7,3", 0, 0}, // iPad Pro (10,5", Wi-Fi)
     {"iPad7,4", 2315222105, 4}, // iPad Pro (10,5", Cellular)
-    {"iPad7,5", 0, 0}, // iPad (6th gen, 2018, Wi-Fi)
-    {"iPad7,6", 3840149528, 4}, // iPad (6th gen, 2018, Cellular)
     {"iPad8,1", 0, 0}, // iPad Pro (11", Wi-Fi)
     {"iPad8,2", 0, 0}, // iPad Pro (11", 1 TB model, Wi-Fi)
     {"iPad8,3", 165673526, 12}, // iPad Pro 11", Cellular)
@@ -198,12 +206,25 @@ static struct bbdevice bbdevices[] = {
     {"iPad8,7", 165673526, 12}, // iPad Pro 12,9", 3rd gen, Cellular)
     {"iPad8,8", 165673526, 12}, // iPad Pro 12,9", 3rd gen, 1 TB model, Cellular)
     
+    // Apple Watches
+    {"Watch1,1", 0, 0}, // Apple Watch Series 0 (38 mm)
+    {"Watch1,2", 0, 0}, // Apple Watch Series 0 (42 mm)
+    {"Watch2,3", 0, 0}, // Apple Watch Series 2 (38 mm)
+    {"Watch2,4", 0, 0}, // Apple Watch Series 2 (42 mm)
+    {"Watch2,6", 0, 0}, // Apple Watch Series 1 (38 mm)
+    {"Watch2,7", 0, 0}, // Apple Watch Series 1 (42 mm)
+    {"Watch3,3", 0, 0}, // Apple Watch Series 3 (38 mm)
+    {"Watch3,4", 0, 0}, // Apple Watch Series 3 (42 mm)
+    {"Watch4,1", 0, 0}, // Apple Watch Series 4 (40 mm)
+    {"Watch4,2", 0, 0}, // Apple Watch Series 4 (44 mm)
+    
     // Apple TVs
     {"AppleTV1,1", 0, 0}, // 1st gen
     {"AppleTV2,1", 0, 0}, // 2nd gen
     {"AppleTV3,1", 0, 0}, // 3rd gen
     {"AppleTV3,2", 0, 0}, // 3rd gen (2013)
     {"AppleTV5,3", 0, 0}, // 4th gen
+    {"AppleTV6,2", 0, 0}, // 4K
     {NULL, 0, 0}
 };
 
@@ -257,10 +278,8 @@ const char *getBoardconfigFromModel(const char *model){
             }else
                 rt = table->hardware_model;
         }
-        
         table++;
     }
-    
     return rt;
 }
 
@@ -277,10 +296,8 @@ const char *getModelFromBoardconfig(const char *boardconfig){
             }else
                 rt = table->product_type;
         }
-        
         table++;
     }
-    
     return rt;
 }
 
@@ -336,7 +353,7 @@ plist_t getBuildidentity(plist_t buildManifest, const char *model, int isUpdateI
     
     const char *boardconfig = getBoardconfigFromModel(model);
     if (!boardconfig)
-        reterror("[TSSR] cant find boardconfig for device=%s please manuall use --boardconfig\n",model);
+        reterror("[TSSR] can't find boardconfig for device=%s please use --boardconfig\n",model);
     
     rt = getBuildidentityWithBoardconfig(buildManifest, boardconfig, isUpdateInstall);
     
@@ -347,7 +364,6 @@ error:
 
 /* json functions */
 long parseTokens(const char *json, jssytok_t **tokens){
-    
     log("[JSON] counting elements\n");
     long tokensCnt = jssy_parse(json, strlen(json), NULL, 0);
     *tokens = (jssytok_t*)malloc(sizeof(jssytok_t) * tokensCnt);
@@ -357,7 +373,7 @@ long parseTokens(const char *json, jssytok_t **tokens){
 }
 
 /* get functions (again) */
-//returns NULL terminated array of t_versionURL objects
+// returns NULL terminated array of t_versionURL objects
 t_versionURL *getFirmwareUrls(const char *deviceModel, t_iosVersion *versVals, jssytok_t *tokens){
     t_versionURL *rets = NULL;
     const t_versionURL *rets_base = NULL;
@@ -387,9 +403,9 @@ malloc_rets:
                 else if (strncmp(releaseType->value, "Beta", releaseType->size) != 0) continue;
             }
             
-            jssytok_t *url = jssy_dictGetValueForKey(tmp, "url");
+            jssytok_t *url = jssy_dictGetValueForKey(tmp, "URL");
             jssytok_t *i_vers = jssy_dictGetValueForKey(tmp, "version");
-            jssytok_t *i_build = jssy_dictGetValueForKey(tmp, "buildid");
+            jssytok_t *i_build = jssy_dictGetValueForKey(tmp, "build ID");
             
             if (!versVals->version){
                 versVals->version = (char*)malloc(i_vers->size+1);
@@ -401,13 +417,13 @@ malloc_rets:
             else{
                 for (int i=0; rets_base[i].buildID; i++) {
                     if (strncmp(rets_base[i].buildID, i_build->value, i_build->size) == 0){
-                        info("[TSSC] Marking duplicated buildid %s\n",rets_base[i].buildID);
+                        info("[TSSC] Marking duplicated build ID %s\n",rets_base[i].buildID);
                         rets->isDupulicate = 1;
                         break;
                     }
                 }
                 
-                info("[TSSC] got firmwareurl for iOS %.*s build %.*s\n",(int)i_vers->size, i_vers->value,(int)i_build->size, i_build->value);
+                info("[TSSC] got firmware URL for iOS %.*s build %.*s\n",(int)i_vers->size, i_vers->value,(int)i_build->size, i_build->value);
                 rets->version = (char*)malloc(i_vers->size+1);
                 memcpy(rets->version, i_vers->value, i_vers->size);
                 rets->version[i_vers->size] = '\0';
@@ -445,7 +461,7 @@ int downloadPartialzip(const char *url, const char *file, const char *dst){
     log("[LFZP] downloading %s from %s\n\n",file,url);
     fragmentzip_t *info = fragmentzip_open(url);
     if (!info) {
-        error("[LFZP] failed to open url\n");
+        error("[LFZP] failed to open URL\n");
         return -1;
     }
     int ret = fragmentzip_download_file(info, file, dst, fragmentzip_callback);
@@ -490,7 +506,8 @@ char *getBuildManifest(char *url, const char *device, const char *version, const
     if (!url) {
         if (!f || nocache) return NULL;
         info("[TSSC] using cached Buildmanifest for %s\n",name);
-    }else info("[TSSC] opening Buildmanifest for %s\n",name);
+    }else
+        info("[TSSC] opening Buildmanifest for %s\n",name);
     
     if (!f || nocache){
         //download if it isn't there
@@ -536,7 +553,6 @@ void getRandNum(char *dst, size_t size, int base){
 
 /* TSS functions */
 int tss_populate_devicevals(plist_t tssreq, uint64_t ecid, char *nonce, size_t nonce_size, char *sep_nonce, size_t sep_nonce_size, int image4supported){
-    
     plist_dict_set_item(tssreq, "ApECID", plist_new_uint(ecid));
     if (nonce) {
         plist_dict_set_item(tssreq, "ApNonce", plist_new_data(nonce, nonce_size));
@@ -659,12 +675,12 @@ int tss_populate_random(plist_t tssreq, int is64bit, t_devicevals *devVals){
         if (!devVals->parsedApnonceLen)
             devVals->apnonce = NULL;
         else if (devVals->parsedApnonceLen != nonceLen)
-            return error("[TSSR] parsed APNoncelen != requiredAPNoncelen (%u != %u)\n",(unsigned int)devVals->parsedApnonceLen,(unsigned int)nonceLen),-1;
+            return error("[TSSR] parsed ApNoncelen != requiredApNoncelen (%u != %u)\n",(unsigned int)devVals->parsedApnonceLen,(unsigned int)nonceLen),-1;
     }else{
         devVals->apnonce = (char*)malloc((devVals->parsedApnonceLen = nonceLen)+1);
         if (nonceLen == 20) {
-            //this is a pre iPhone 7 device
-            //nonce is derived from generator with SHA1
+            /* this is a pre iPhone 7 device
+               ApNonce is derived from generator with SHA1 */
             unsigned char zz[9] = {0};
             
             for (int i=0; i<sizeof(devVals->generator)-1; i++) {
@@ -703,7 +719,7 @@ int tss_populate_random(plist_t tssreq, int is64bit, t_devicevals *devVals){
             SHA384(zz, 8, genHash);
             memcpy(devVals->apnonce, genHash, 32);
         }else{
-            return error("[TSSR] Automatic generator->nonce calculation failed. Unknown device with noncelen=%u\n",(unsigned int)nonceLen),-1;
+            return error("[TSSR] Automatic generator->ApMonce calculation failed. Unknown device with ApNoncelen=%u\n",(unsigned int)nonceLen),-1;
         }
     }
     
@@ -718,9 +734,9 @@ int tss_populate_random(plist_t tssreq, int is64bit, t_devicevals *devVals){
     if (devVals->apnonce) devVals->apnonce[nonceLen] = '\0';
     devVals->sepnonce[NONCELEN_SEP] = '\0';
     
-    debug("[TSSR] ecid=%llu\n",devVals->ecid);
-    debug("[TSSR] apnonce=%s\n",devVals->apnonce);
-    debug("[TSSR] sepnonce=%s\n",devVals->sepnonce);
+    debug("[TSSR] ECID=%llu\n",devVals->ecid);
+    debug("[TSSR] ApNonce=%s\n",devVals->apnonce);
+    debug("[TSSR] SEPNonce=%s\n",devVals->sepnonce);
     
     int rt = tss_populate_devicevals(tssreq, devVals->ecid, devVals->apnonce, devVals->parsedApnonceLen, devVals->sepnonce, devVals->parsedSepnonceLen, is64bit);
     return rt;
@@ -757,7 +773,7 @@ getID0:
     int is64Bit = !(!sep || plist_get_node_type(sep) != PLIST_DICT);
     
     if (tss_populate_random(tssparameter,is64Bit,devVals))
-        reterror("[TSSR] failed to populate tss request\n");
+        reterror("[TSSR] failed to populate TSS request\n");
     
     tss_parameters_add_from_manifest(tssparameter, id0);
     if (tss_request_add_common_tags(tssreq, tssparameter, NULL) < 0) {
@@ -840,18 +856,17 @@ int isManifestBufSignedForDevice(char *buildManifestBuffer, t_devicevals *devVal
     if (isSigned && save_shshblobs){
         if (!devVals->installType){
             plist_t tssreq2 = NULL;
-            info("also requesting APTicket for installType=Update\n");
+            info("also requesting ApTicket for update function\n");
             devVals->installType = kInstallTypeUpdate;
             if (tssrequest(&tssreq2, buildManifestBuffer, devVals, basebandMode)){
-                warning("[TSSR] faild to build tssrequest for alternative installType\n");
+                warning("[TSSR] failed to build TSS request for alternative installType\n");
             }else{
                 apticket2 = tss_request_send(tssreq2, NULL);
                 if (print_tss_response) debug_plist(apticket2);
             }
             if (tssreq2) plist_free(tssreq2);
             devVals->installType = kInstallTypeDefault;
-        }
-        {
+        }   {
             plist_t tssreq2 = NULL;
             char *apnonce = devVals->apnonce;
             size_t apnonceLen = devVals->parsedApnonceLen;
@@ -921,11 +936,11 @@ int isManifestBufSignedForDevice(char *buildManifestBuffer, t_devicevals *devVal
         snprintf(fname+prePathLen, fnamelen, DIRECTORY_DELIMITER_STR"%s_%s_%s-%s_%s.shsh%s",cecid,tmpDevicename,cpvers,cbuild, apnonce, (*devVals->generator || apticket2) ? "2" : "");
         
         FILE *shshfile = fopen(fname, "w");
-        if (!shshfile) error("[Error] can't save shsh at %s\n",fname);
+        if (!shshfile) error("[Error] can't save signing tickets at %s\n",fname);
         else{
             fwrite(data, strlen(data), 1, shshfile);
             fclose(shshfile);
-            info("Saved shsh blobs!\n");
+            info("Saved signing tickets!\n");
         }
         
         if (apnonceLen) free(apnonce);
@@ -986,7 +1001,6 @@ int isManifestSignedForDevice(const char *buildManifestPath, t_devicevals *devVa
                 goto checkedDeviceModel;
         }
     }
-    
     reterror("[TSSC] selected device can't be used with that buildmanifest\n");
     
 checkedDeviceModel:
@@ -1003,7 +1017,10 @@ int isVersionSignedForDevice(jssytok_t *firmwareTokens, t_iosVersion *versVals, 
 #define reterror(a ... ) {error(a); goto error;}
     int nocacheorig = nocache;
     if (versVals->version && atoi(versVals->version) <= 3) {
-        info("[TSSC] version to check \"%s\" seems to be iOS 3 or lower, which did not require SHSH or APTicket.\n\tSkipping checks and returning true.\n",versVals->version);
+        /* NOTE: Signing tickets technology available with iPhone OS 3.x only for iPhone 3Gs & iPod touch (3rd generation). Other devices have signing technology since iOS 4.
+                 So, iPhone and iPod touch (1st generations) doesn't have signing technology for all firmwares; iPhone 3G and iPod touch (2nd generation) have it only for iOS 4+. */
+        /* TO-DO: Checking device for rather device checking on iPhone OS 3.0 for goodly request signing tickets. */
+        info("[TSSC] version to check \"%s\" seems to be iPhone OS 3 or lower, which did not require SHSH or APTicket.\n\tSkipping checks and returning true.\n",versVals->version);
         return 1;
     }
     
@@ -1012,13 +1029,13 @@ int isVersionSignedForDevice(jssytok_t *firmwareTokens, t_iosVersion *versVals, 
     char *buildManifest = NULL;
     
     t_versionURL *urls = getFirmwareUrls(devVals->deviceModel, versVals, firmwareTokens);
-    if (!urls) reterror("[TSSC] ERROR: could not get url for device %s on iOS %s\n",devVals->deviceModel,(!versVals->version ? versVals->buildID : versVals->version));
+    if (!urls) reterror("[TSSC] ERROR: could not get URL for device %s on iOS %s\n",devVals->deviceModel,(!versVals->version ? versVals->buildID : versVals->version));
 
     int cursigned = 0;
     for (t_versionURL *u = urls; u->url; u++) {
         buildManifest = getBuildManifest(u->url, devVals->deviceModel, versVals->version, u->buildID, versVals->isOta);
         if (!buildManifest) {
-            error("[TSSC] ERROR: could not get BuildManifest for firmwareurl %s\n",u->url);
+            error("[TSSC] ERROR: could not get BuildManifest for firmware URL %s\n",u->url);
             continue;
         }
 
@@ -1026,7 +1043,7 @@ int isVersionSignedForDevice(jssytok_t *firmwareTokens, t_iosVersion *versVals, 
 
         nocache = 1;
         if (cursigned) {
-            info("[TSSC] skipping duplicated build\n");
+            info("[TSSC] skipping duplicated build ID\n");
             
         }else if ((isSignedOne = isManifestBufSignedForDevice(buildManifest, devVals, versVals->basebandMode)) >= 0){
             cursigned |= (isSigned > 0);
@@ -1145,7 +1162,6 @@ char **getListOfiOSForDevice(jssytok_t *tokens, const char *device, int isOTA, i
     
     jssytok_t *tmp = firmwares->subval;
     for (int i=0; i<firmwares->size; tmp = tmp->next,i++) {
-        
         jssytok_t *ios = jssy_dictGetValueForKey(tmp, "version");
         
         int isBeta = 0;

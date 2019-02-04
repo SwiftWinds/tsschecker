@@ -481,17 +481,17 @@ char *getBuildManifest(char *url, const char *device, const char *version, const
     char *fileDir = malloc(len);
     memset(fileDir, 0, len);
     
-    strncat(fileDir, MANIFEST_SAVE_PATH);
-    strncat(fileDir, DIRECTORY_DELIMITER_STR);
-    strncat(fileDir, device);
-    strncat(fileDir, "_");
-    strncat(fileDir, version);
+    strcat(fileDir, MANIFEST_SAVE_PATH);
+    strcat(fileDir, DIRECTORY_DELIMITER_STR);
+    strcat(fileDir, device);
+    strcat(fileDir, "_");
+    strcat(fileDir, version);
     if (buildID){
-        strncat(fileDir, "_");
-        strncat(fileDir, buildID);
+        strcat(fileDir, "_");
+        strcat(fileDir, buildID);
     }
     
-    if (isOta) strncat(fileDir, "ota");
+    if (isOta) strcat(fileDir, "ota");
     
     memset(&st, 0, sizeof(st));
     if (stat(MANIFEST_SAVE_PATH, &st) == -1) __mkdir(MANIFEST_SAVE_PATH, 0700);

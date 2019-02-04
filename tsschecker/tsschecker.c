@@ -70,7 +70,7 @@ static const char *win_path_get(enum paths path){
     if (tmp && *tmp){
         size_t len = strlen(tmp) + strlen(win_pathvars[path]) + 1;
         win_paths[path] = (char *)malloc(len);
-        memset((char*)win_paths[path], '\0');
+        memset((char*)win_paths[path], '\0', len);
         strcat((char*)win_paths[path], tmp);
         strcat((char*)win_paths[path], win_pathvars[path]);
         return win_paths[path];

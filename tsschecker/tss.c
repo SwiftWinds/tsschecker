@@ -1262,7 +1262,7 @@ char* tss_request_send_raw(char* request, const char* server_url_string, int* re
             // An internal error occured, most likely the request was malformed
             break;
         } else if (status_code == 128) {
-            // Error that occurs when saving blobs on certain A18/18X devices
+            // Error that occurs when saving blobs on certain A8/8X devices
             // Can be safely ignored
             break;
         } else {
